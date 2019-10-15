@@ -1,10 +1,10 @@
-import { 
-    ServiceKey, 
+import {
+    ServiceKey,
     ServiceScope,
-    Text 
+    Text
 } from '@microsoft/sp-core-library';
-import { 
-    SPHttpClient, 
+import {
+    SPHttpClient,
     SPHttpClientResponse
 } from '@microsoft/sp-http';
 import { PageContext } from '@microsoft/sp-page-context';
@@ -22,7 +22,7 @@ export class ListSharePoint implements IListService {
     constructor(serviceScope: ServiceScope) {
         serviceScope.whenFinished(() => {
                 this._spHttpClient = serviceScope.consume(SPHttpClient.serviceKey);
-                
+
                 this._pageContext = serviceScope.consume(PageContext.serviceKey);
 
                 this._currentWebUrl = this._pageContext.web.absoluteUrl;
@@ -33,13 +33,13 @@ export class ListSharePoint implements IListService {
         const url: string = Text.format("{0}/_api/Lists/getByTitle('{1}')/items?$select=Title,Description,ImageUrl", this._currentWebUrl, listName);
 
         console.log(url);
-     
+
         return this._spHttpClient.get(url, SPHttpClient.configurations.v1)
             .then((response: SPHttpClientResponse) => {
                 return response.json()
                 .then(data => {
                     console.log(data.value);
-                    return data.value;
+                    return (data.value as any[]).map(raw => new ListItem(raw));
                 });
             });
     }
